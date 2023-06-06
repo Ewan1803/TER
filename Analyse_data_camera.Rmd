@@ -1,0 +1,61 @@
+---
+title: "Test"
+author: "Ewan Mahé"
+date: "2023-05-02"
+output: html_document
+---
+
+Pour importer le fichier
+```{r}
+library(dplyr)
+library(readr)
+setwd("~/M1/TER/DATA/data_cam/Data_posture")
+df5 <- read_delim("Mar_cada.csv", delim = ";", 
+    escape_double = FALSE, trim_ws = TRUE, 
+    skip = 3)
+View(df5)
+
+
+
+df5 <- slice(df5, -1)#on supprime la première ligne qui ne sert à rien
+
+df5 <- data.frame(sapply(df5, as.numeric))#on transforme les valeurs en numérique
+```
+Calcul des vecteurs pelvis-tete sur les axes X et Z
+```{r}
+df5$vec_pelvis_tete_x <- df5$RHE...38 - df5$RPV...41
+df5$vec_pelvis_tete_z <- df5$RHE...40 - df5$RPV...43
+```
+
+Calcul de la norme
+```{r}
+norme_pelvis_tete <- sqrt(df5$vec_pelvis_tete_x^2 + df5$vec_pelvis_tete_z^2)
+```
+Calcul des vecteurs normés
+```{r}
+df5$vec_pelvis_tete_x_norm <- df5$vec_pelvis_tete_x / norme_pelvis_tete
+df5$vec_pelvis_tete_z_norm <- df5$vec_pelvis_tete_z / norme_pelvis_tete
+```
+
+Calcul de l'angle axe pelvis-tete/axe horizontal (sol) grâce à la fonction atan2
+```{r}
+df5$angle_pelvis_tete_sol <- atan2(df5$vec_pelvis_tete_z_norm, df5$vec_pelvis_tete_x_norm)
+
+df5$degre <- df5$angle_pelvis_tete_sol * (180/pi)
+```
+
+Représentation graphique permettant d'observer les valeurs et vérifier l'absence de valeurs aberrantes
+```{r}
+plot(df5$degre)
+```
+Calcul de l'angle moyen
+```{r}
+mean(na.omit(df5$degre))
+```
+
+
+
+
+
+
+
